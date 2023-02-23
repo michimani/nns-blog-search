@@ -10,7 +10,7 @@ from util.nns import load_nns_index
 K = 3
 
 
-def search(query):
+def search(query, k):
     _, count = str_to_tokens(query)
     if count > TOKEN_LIMIT:
         print('over token limit. token_count:{} query_len:{}'.format(
@@ -25,7 +25,7 @@ def search(query):
         query_embedding = np.array(
             [embeddings[0]["embedding"]], dtype=np.float32)
 
-        _, idxs = nns_index.search(query_embedding, K)
+        _, idxs = nns_index.search(query_embedding, k)
         for idx in idxs[0]:
             blog_content = blog_indexes[idx]
             print('-----------\nTitle: {}\nURL: {}\n'.format(
@@ -46,8 +46,11 @@ if __name__ == '__main__':
         exit
 
     query = args[1]
+    k = K
+    if len(args) > 2 and args[2].isnumeric():
+        k = int(args[2])
 
     nns_index = load_nns_index()
     openai_client = init_openai()
 
-    search(query)
+    search(query, k)
