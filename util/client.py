@@ -1,6 +1,9 @@
 import openai
 import os
 
+EMBEDDING_MODEL = 'text-embedding-ada-002'
+TOKEN_LIMIT = 8191
+
 
 def init_openai():
     org_id = os.getenv("OPENAI_ORGANIZATION_ID")
@@ -18,3 +21,8 @@ def init_openai():
     openai.api_key = api_key
 
     return openai
+
+
+def create_embeddings(openai_client, input):
+    return openai_client.Embedding.create(
+        input=input, model=EMBEDDING_MODEL)['data']
