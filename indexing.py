@@ -17,19 +17,19 @@ def load_blog_indexes():
 
 
 DIMENSION = 1536
-nss_index = None
+nns_index = None
 
 
 def init_nns_index():
-    global nss_index
-    nss_index = faiss.IndexFlatL2(DIMENSION)
+    global nns_index
+    nns_index = faiss.IndexFlatL2(DIMENSION)
 
 
-NSS_INSEX_FILE = 'data/nss_index.faiss'
+NNS_INSEX_FILE = 'data/nns_index.faiss'
 
 
 def save_nns_index():
-    faiss.write_index(nss_index, NSS_INSEX_FILE)
+    faiss.write_index(nns_index, NNS_INSEX_FILE)
 
 
 EMBEDDING_MODEL = 'text-embedding-ada-002'
@@ -56,7 +56,7 @@ def create_embeddings(blog_index):
         embeddings = np.array([x["embedding"]
                                for x in embeddings], dtype=np.float32)
 
-        nss_index.add(embeddings)
+        nns_index.add(embeddings)
     except Exception:
         print(traceback.format_exc())
 
