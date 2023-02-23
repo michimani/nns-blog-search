@@ -1,34 +1,19 @@
 import json
-import os
+import time
 import faiss
-import openai
+import traceback
 import numpy as np
+from client import init_openai
 from ctoken import str_to_tokens
 
-# BLOG_INDEX_FILE = 'data/index.json'
-BLOG_INDEX_FILE = 'data/index_len5.json'
+BLOG_INDEX_FILE = 'data/index.json'
+# BLOG_INDEX_FILE = 'data/index_len5.json'
 
 
 def load_blog_indexes():
     with open(BLOG_INDEX_FILE) as f:
         indexes = json.load(f)
         return indexes
-
-
-def init_openai():
-    org_id = os.getenv("OPENAI_ORGANIZATION_ID")
-    api_key = os.getenv("OPENAI_API_KEY")
-
-    if org_id is None or len(org_id) == 0:
-        print("OPENAI_ORGANIZATION_ID is empty")
-        return
-
-    if api_key is None or len(api_key) == 0:
-        print("OPENAI_API_KEY is empty")
-        return
-
-    openai.organization = org_id
-    openai.api_key = api_key
 
 
 DIMENSION = 1536
@@ -62,28 +47,41 @@ def create_embeddings(blog_index):
     if count > TOKEN_LIMIT:
         print('over token limit. token_count:{} content_len:{} title_len:{} url_len:{}'.format(
             count, len(blog_index['contents']), len(blog_index['title']), len(blog_index['permalink'])))
-        return
+        return False
 
-    embeddings = openai.Embedding.create(
-        input=bi_str, model=EMBEDDING_MODEL)['data']
+    try:
+        embeddings = openai_client.Embedding.create(
+            input=bi_str, model=EMBEDDING_MODEL)['data']
 
-    embeddings = np.array([x["embedding"]
-                           for x in embeddings], dtype=np.float32)
+        embeddings = np.array([x["embedding"]
+                               for x in embeddings], dtype=np.float32)
 
-    nss_index.add(embeddings)
+        nss_index.add(embeddings)
+    except Exception:
+        print(traceback.format_exc())
 
+        return False
+
+    return True
+
+
+openai_client = None
 
 if __name__ == '__main__':
     blog_indexes = load_blog_indexes()
     print('There are {} indexes.'.format(len(blog_indexes)))
 
-    init_openai()
+    openai_client = init_openai()
     init_nns_index()
 
     i = 1
     for bi in blog_indexes:
-        create_embeddings(bi)
-        print('{}: created nns index'.format(i))
+        if create_embeddings(bi):
+            print('{}: created nns index'.format(i))
+        else:
+            print('{}: failed to create nns index'.format(i))
         i += 1
+
+        time.sleep(2)
 
     save_nns_index()

@@ -1,2 +1,3 @@
 .env
 nns-bs-local.yaml
+nss_index.faiss
