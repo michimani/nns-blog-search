@@ -1,0 +1,4 @@
+.env
+nns-bs-local.yaml
+data/nns_index.faiss
+data/index.json
