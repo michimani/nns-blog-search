@@ -1,6 +1,6 @@
 import tiktoken
 
-enc = tiktoken.get_encoding('gpt2')
+enc = tiktoken.get_encoding('cl100k_base')
 
 
 def str_to_tokens(s: str):
